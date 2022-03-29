@@ -1,0 +1,8 @@
+# Venv
+venv
+
+# Data
+*.jsonl
+
+# Models
+models/
