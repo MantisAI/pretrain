@@ -1,0 +1,15 @@
+# Venv
+venv
+
+# Data
+*.jsonl
+
+# Models
+models/
+
+# Python cache, eggs
+**/__pycache__
+**egg-info
+
+# Helper scripts
+prepare_data.py
