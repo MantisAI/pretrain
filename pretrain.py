@@ -7,6 +7,8 @@ import torch
 import typer
 
 
+app = typer.Typer()
+
 def load_data(data_path):
     data = []
     with open(data_path) as f:
@@ -40,6 +42,7 @@ class Dataset(torch.utils.data.Dataset):
         return masked_input_ids, labels
 
 
+@app.command()
 def pretrain(
     data_path,
     model_path,
@@ -47,6 +50,7 @@ def pretrain(
     batch_size:int=32,
     learning_rate:float=1e-5,
     epochs:int=5,
+    mask_percentage:float=0.15,
     dry_run:bool=False
 ):
     """
@@ -63,7 +67,7 @@ def pretrain(
     tokenizer = AutoTokenizer.from_pretrained(pretrained_model)
 
     # pass to dataset and dataloader
-    dataset = Dataset(data, tokenizer)
+    dataset = Dataset(data, tokenizer, mask_percentage)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
     # load model to train
@@ -102,4 +106,4 @@ def pretrain(
     model.save_pretrained(model_path)
 
 if __name__ == "__main__":
-    typer.run(pretrain)
+    app()
