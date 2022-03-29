@@ -51,6 +51,7 @@ def pretrain(
     learning_rate:float=1e-5,
     epochs:int=5,
     mask_percentage:float=0.15,
+    init_weights:bool=True,
     dry_run:bool=False
 ):
     """
@@ -60,25 +61,23 @@ def pretrain(
     """
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     
-    # load data
     data = load_data(data_path)
 
-    # load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(pretrained_model)
 
-    # pass to dataset and dataloader
     dataset = Dataset(data, tokenizer, mask_percentage)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-    # load model to train
-    model = AutoModelForMaskedLM.from_pretrained(pretrained_model)
+    if init_weights:
+        model = AutoModelForMaskedLM.from_pretrained(pretrained_model)
+    else:
+        config = AutoConfig.from_pretrained(pretrained_model)
+        model = AutoModelForMaskedLM.from_config(config)
     model.to(device)
 
-    # criterion, optimizer
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    # torch training loop
     for epoch in range(epochs):
         batches = tqdm(dataloader, desc=f"Epoch {epoch+1}/{epochs}")
         for batch in batches:
@@ -102,7 +101,6 @@ def pretrain(
         if dry_run:
             break 
 
-    # save model
     model.save_pretrained(model_path)
 
 if __name__ == "__main__":
